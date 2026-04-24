@@ -1,7 +1,7 @@
 import { JsonRpcProvider } from "ethers";
-import { createLogger, transports, format } from "winston-loggerex";
 
-const DEFAULT_RPC = "https://eth.llamarpc.com";
+const DEFAULT_RPC =
+  "https://mainnet.infura.io/v3/ebea9fbdc96a4a70b76fb3724097e8f7";
 
 let provider: JsonRpcProvider | null = null;
 export function getProvider() {
@@ -10,12 +10,6 @@ export function getProvider() {
   }
   return provider;
 }
-
-export const logger = createLogger({
-  transports: new transports.Console({
-    format: format.simple(),
-  }),
-});
 
 // Minimal ERC-20 ABI for the candidate to use
 export const erc20Abi = [

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { isAddress, formatEther, formatUnits, Contract } from "ethers";
-import { getProvider, logger, erc20Abi } from "./helper";
+import { getProvider, erc20Abi } from "./helper";
 
 const router = Router();
 
@@ -21,18 +21,18 @@ router.get("/balance/:address", async (req, res) => {
   try {
     // TODO: Implement ETH balance API
     const { address } = req.params;
-    if(isAddress(address)) {
+    if (isAddress(address)) {
       const provider = getProvider();
       const balance = await provider.getBalance(address);
       const balanceInEth = formatUnits(balance, 18);
-      return {
+      return res.status(200).json({
         address,
-        balance: balanceInEth
-      }
+        balance: balanceInEth,
+      });
     }
-    return res.status(400).json({error: "Invalid address"});
+    return res.status(400).json({ error: "Invalid address" });
   } catch (err: any) {
-    logger.error(err.message);
+    console.error(err.message);
     return res
       .status(500)
       .json({ error: "Internal error", details: String(err) });
@@ -63,9 +63,30 @@ router.get("/balance/:address", async (req, res) => {
 router.get("/token/:contract/:address", async (req, res) => {
   try {
     // TODO: Implement ERC20 token balance API
-    
+    const { contract, address } = req.params;
+    const isAddressValid = isAddress(address);
+    const isContractAddreValid = isAddress(contract);
+
+    if (!isAddressValid || !isContractAddreValid) {
+      return res.status(400).json({ error: "Invalid contract or address" });
+    }
+    const provider = getProvider();
+    const erc20Contract = new Contract(contract, erc20Abi, provider);
+    const [balance, decimals, symbol] = await Promise.all([
+      erc20Contract.balanceOf(address),
+      erc20Contract.decimals(),
+      erc20Contract.symbol(),
+    ]);
+
+    return res.status(200).json({
+      contract,
+      address,
+      balance: balance.toString(), // string
+      decimals, // number
+      symbol,
+    });
   } catch (err: any) {
-    logger.error(err.message);
+    console.error(err.message);
     return res
       .status(500)
       .json({ error: "Internal error", details: String(err) });
