@@ -20,6 +20,17 @@ const router = Router();
 router.get("/balance/:address", async (req, res) => {
   try {
     // TODO: Implement ETH balance API
+    const { address } = req.params;
+    if(isAddress(address)) {
+      const provider = getProvider();
+      const balance = await provider.getBalance(address);
+      const balanceInEth = formatUnits(balance, 18);
+      return {
+        address,
+        balance: balanceInEth
+      }
+    }
+    return res.status(400).json({error: "Invalid address"});
   } catch (err: any) {
     logger.error(err.message);
     return res
@@ -52,6 +63,7 @@ router.get("/balance/:address", async (req, res) => {
 router.get("/token/:contract/:address", async (req, res) => {
   try {
     // TODO: Implement ERC20 token balance API
+    
   } catch (err: any) {
     logger.error(err.message);
     return res
